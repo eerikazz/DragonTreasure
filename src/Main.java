@@ -5,7 +5,9 @@ public class Main {
 
     enum GameState {
         Menu,
+        Setup,
         Game,
+        End,
         Exit
     }
 
@@ -21,8 +23,19 @@ public class Main {
                 case Menu:
                     handleMenu();
                     break;
+                case Setup:
+                    createPlayer();
+                    break;
                 case Game:
-                    handleGame(currentRoom);
+                    if (currentRoom == 6) {
+                        gameState = GameState.End;
+                    } else {
+                        handleGame(currentRoom);
+                    }
+                    break;
+                case End:
+                    handleEnd();
+                    gameState = GameState.Exit;
                     break;
                 default:
                     System.out.println("ERROR: Unknown state!");
@@ -37,7 +50,7 @@ public class Main {
         String userInput = input.nextLine().toLowerCase();
 
         if (userInput.equals("s")) {
-            gameState = GameState.Game;
+            gameState = GameState.Setup;
         } else if (userInput.equals("e")) {
             gameState = GameState.Exit;
         } else {
@@ -45,8 +58,18 @@ public class Main {
         }
     }
 
+    private static void createPlayer() {
+        System.out.println("Enter username:");
+        String userInput = input.nextLine();
+        new Player(userInput);
+        gameState = GameState.Game;
+    }
+
     private static void handleGame(int roomIndex) {
         clearScreen();
+
+
+
         Room room = rooms.get(roomIndex);
         System.out.printf("Location: Room " + roomIndex + "%n");
         room.doNarrative();
@@ -66,6 +89,10 @@ public class Main {
             // Körs men kmr inte visas pga while-loopen och clearScreen().
             System.out.println("Invalid input.");
         }
+    }
+
+    private static void handleEnd() {
+        System.out.println("You made it out of the cave. Congratulations!");
     }
 
     private static void setupGame() {
