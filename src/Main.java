@@ -5,7 +5,6 @@ public class Main {
 
     enum GameState {
         Menu,
-        Setup,
         Game,
         End,
         Exit
@@ -18,25 +17,26 @@ public class Main {
 
     public static void main(String[] args) {
         setupGame();
+        createPlayer();
         while (gameState != GameState.Exit) {
             switch (gameState) {
                 case Menu:
                     handleMenu();
                     break;
-                case Setup:
-                    createPlayer();
-                    break;
+
                 case Game:
-                    if (currentRoom == 6) {
+                    if (currentRoom == 9) {
                         gameState = GameState.End;
                     } else {
                         handleGame(currentRoom);
                     }
                     break;
+
                 case End:
                     handleEnd();
                     gameState = GameState.Exit;
                     break;
+
                 default:
                     System.out.println("ERROR: Unknown state!");
                     gameState = GameState.Exit;
@@ -50,7 +50,7 @@ public class Main {
         String userInput = input.nextLine().toLowerCase();
 
         if (userInput.equals("s")) {
-            gameState = GameState.Setup;
+            gameState = GameState.Game;
         } else if (userInput.equals("e")) {
             gameState = GameState.Exit;
         } else {
@@ -62,32 +62,30 @@ public class Main {
         System.out.println("Enter username:");
         String userInput = input.nextLine();
         new Player(userInput);
-        gameState = GameState.Game;
+        gameState = GameState.Menu;
     }
 
     private static void handleGame(int roomIndex) {
         clearScreen();
-
-
-
         Room room = rooms.get(roomIndex);
         System.out.printf("Location: Room " + roomIndex + "%n");
         room.doNarrative();
-        System.out.printf("%n- - -%nPress [M] then [Enter] to return to MENU (NO SAVING).%n%nInput: ");
+        // System.out.printf("%n- - -%nPress [M] then [Enter] to return to MENU (NO SAVING).%n%nInput: ");
+        System.out.printf("%n%nInput: ");
         String userInput = input.nextLine().toLowerCase();
 
         for (Door door : room.getDoors()) {
             String direction = String.valueOf(door.getDirection().name().charAt(0)).toLowerCase();
+
             if (userInput.equals(direction)) {
                 currentRoom = rooms.indexOf(door.getNextRoom());
+            } else if (!userInput.equals("m")) {
+                System.out.println("Invalid input.");
             }
         }
 
         if (userInput.equals("m")) {
             gameState = GameState.Menu;
-        } else {
-            // Körs men kmr inte visas pga while-loopen och clearScreen().
-            System.out.println("Invalid input.");
         }
     }
 
@@ -106,6 +104,7 @@ public class Main {
         Room room6 = new Room("Drake");
         Room room7 = new Room("Room description.");
         Room room8 = new Room("Room description.");
+        Room room9 = new Room("Game end");
         rooms.add(room0);
         rooms.add(room1);
         rooms.add(room2);
@@ -115,6 +114,7 @@ public class Main {
         rooms.add(room6);
         rooms.add(room7);
         rooms.add(room8);
+        rooms.add(room9);
 
         // Dörr för room 0 
         // ändrat room 1 door till false så mak kan gå vidare
@@ -141,12 +141,17 @@ public class Main {
 
         // Dörrar för rum 4
         Door door7 = new Door(room6, Door.Direction.NORTH, false);
+        Door back5 = new Door(room3, Door.Direction.SOUTH, false);
         room4.setDoor(door7);
+        room4.setDoor(back5);
+
         // Dörrar för rum 5
+        Door back6 = new Door(room3, Door.Direction.SOUTH, false);
         room5.setDoor(door7);
+        room5.setDoor(back6);
 
         // Dörrar för rum 6
-        Door door8 = new Door(room1, Door.Direction.NORTH, false); // Drake
+        Door door8 = new Door(room9, Door.Direction.NORTH, false); // Drake
         room6.setDoor(door8);
 
         // Dörrar för rum 7
