@@ -3,12 +3,12 @@ import java.util.ArrayList;
 public class Room {
     private String description;
     private ArrayList<Door> doors;
-
+    // Konstruktor
     public Room(String description) {
         this.description = description;
         this.doors = new ArrayList<>();
     }
-
+    // Metod som skriver ut beskrivning och dörrar
     public void doNarrative() {
         System.out.printf("%n" + description + "%n");
 
@@ -22,11 +22,11 @@ public class Room {
             }
         }
     }
-
+    // Settermetod som lägger till en dörr i doorslistan
     public void setDoor(Door newDoor) {
         doors.add(newDoor);
     }
-
+    // Gettermetod som returnerar hela listan med dörrar
     public ArrayList<Door> getDoors() {
         return doors;
     }

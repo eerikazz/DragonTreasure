@@ -2,53 +2,54 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
-
+    // Skapa enum för att kontrollera gamestate
     enum GameState {
         Menu,
         Game,
         End,
         Exit
     }
-
+    // Skapa arraylist som innehåller alla rum
     private static ArrayList<Room> rooms = new ArrayList<>();
+    // Variabel för att hålla koll på nuvarande gamestate
     private static GameState gameState = GameState.Menu;
     private static Scanner input = new Scanner(System.in);
+    // Variabel som håller koll på vilket är det nuvarande rummet
     private static int currentRoom = 0;
 
     public static void main(String[] args) {
-        setupGame();
-        createPlayer();
-        while (gameState != GameState.Exit) {
+        setupGame();    // Skapar rum och dörrar
+        createPlayer(); // Skapa spelare
+        while (gameState != GameState.Exit) { // så länge gamestate inte är exit körs spelet
             switch (gameState) {
-                case Menu:
+                case Menu: // Om gamestate är menu visas meny
                     handleMenu();
                     break;
 
-                case Game:
+                case Game: // Om gamestate är game körs metod för att skriva ut rum
                     if (currentRoom == 9) {
-                        gameState = GameState.End;
+                        gameState = GameState.End; // Om spelaren är i rum 9 avslutas spelet
                     } else {
-                        handleGame(currentRoom);
+                        handleGame(currentRoom);   // Annars skrivs rum ut
                     }
                     break;
 
-                case End:
+                case End: // Avslutar spelet
                     handleEnd();
                     gameState = GameState.Exit;
                     break;
 
-                default:
+                default: // Om gamestate är okänt, avslutas spelet
                     System.out.println("ERROR: Unknown state!");
                     gameState = GameState.Exit;
             }
         }
     }
-
+    // Hanterar menyn
     private static void handleMenu() {
         clearScreen();
         System.out.printf("Location: Menu%n%nPress [S] then [Enter] to START.%nPress [E] then [Enter] to EXIT.%n%nInput: ");
         String userInput = input.nextLine().toLowerCase();
-
         if (userInput.equals("s")) {
             gameState = GameState.Game;
         } else if (userInput.equals("e")) {
@@ -57,14 +58,14 @@ public class Main {
             System.out.println("Invalid input. Try again.");
         }
     }
-
+    // Metod som skapar spelaren
     private static void createPlayer() {
         System.out.println("Enter username:");
         String userInput = input.nextLine();
         new Player(userInput);
         gameState = GameState.Menu;
     }
-
+    // Metod som skriver ut rum och hanterar navigering
     private static void handleGame(int roomIndex) {
         clearScreen();
         Room room = rooms.get(roomIndex);
@@ -73,22 +74,22 @@ public class Main {
         // System.out.printf("%n- - -%nPress [M] then [Enter] to return to MENU (NO SAVING).%n%nInput: ");
         System.out.printf("%n%nInput: ");
         String userInput = input.nextLine().toLowerCase();
-
+        // Loopar igenom alla dörrar ett rum har
         for (Door door : room.getDoors()) {
+            // Hämtar riktning och hämtar den första bokstaven av enumvärdet direction och konverterar till liten bokstav
             String direction = String.valueOf(door.getDirection().name().charAt(0)).toLowerCase();
-
+            // Kontrollerar om det användaren har skrivit ner är ett giltigt enumvärde
             if (userInput.equals(direction)) {
                 currentRoom = rooms.indexOf(door.getNextRoom());
-            } else if (!userInput.equals("m")) {
+            } else if (!userInput.equals("m")) { // Om användaren inte skriver in 'm' är det ogiltigt
                 System.out.println("Invalid input.");
+            } else {
+                gameState = GameState.Menu; // om använder skriver 'm' går spelaren tillbaka till meny
             }
         }
-
-        if (userInput.equals("m")) {
-            gameState = GameState.Menu;
-        }
     }
-
+    
+    // Metod för att avsluta spel. Tanken är att senare lägga till statistik när spelet tar slut
     private static void handleEnd() {
         System.out.println("You made it out of the cave. Congratulations!");
     }
