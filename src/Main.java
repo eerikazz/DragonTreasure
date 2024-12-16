@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
+
     // Skapa enum för att kontrollera gamestate
     enum GameState {
         Menu,
@@ -9,11 +10,12 @@ public class Main {
         End,
         Exit
     }
+    
+    private static Scanner input = new Scanner(System.in);
     // Skapa arraylist som innehåller alla rum
     private static ArrayList<Room> rooms = new ArrayList<>();
     // Variabel för att hålla koll på nuvarande gamestate
     private static GameState gameState = GameState.Menu;
-    private static Scanner input = new Scanner(System.in);
     // Variabel som håller koll på vilket är det nuvarande rummet
     private static int currentRoom = 0;
 
@@ -22,15 +24,17 @@ public class Main {
         createPlayer(); // Skapa spelare
         while (gameState != GameState.Exit) { // så länge gamestate inte är exit körs spelet
             switch (gameState) {
-                case Menu: // Om gamestate är menu visas meny
+                case Menu:
+                    // Om gamestate är menu visas meny
                     handleMenu();
                     break;
 
-                case Game: // Om gamestate är game körs metod för att skriva ut rum
+                case Game:
+                    // Om gamestate är game körs metod för att skriva ut rum
                     if (currentRoom == 9) {
                         gameState = GameState.End; // Om spelaren är i rum 9 avslutas spelet
                     } else {
-                        handleGame(currentRoom);   // Annars skrivs rum ut
+                        renderRoom(currentRoom);   // Annars skrivs rum ut
                     }
                     break;
 
@@ -45,6 +49,7 @@ public class Main {
             }
         }
     }
+
     // Hanterar menyn
     private static void handleMenu() {
         clearScreen();
@@ -58,6 +63,7 @@ public class Main {
             System.out.println("Invalid input. Try again.");
         }
     }
+
     // Metod som skapar spelaren
     private static void createPlayer() {
         System.out.println("Enter username:");
@@ -65,8 +71,9 @@ public class Main {
         new Player(userInput);
         gameState = GameState.Menu;
     }
+
     // Metod som skriver ut rum och hanterar navigering
-    private static void handleGame(int roomIndex) {
+    private static void renderRoom(int roomIndex) {
         clearScreen();
         Room room = rooms.get(roomIndex);
         System.out.printf("Location: Room " + roomIndex + "%n");
@@ -77,7 +84,7 @@ public class Main {
         // Loopar igenom alla dörrar ett rum har
         for (Door door : room.getDoors()) {
             // Hämtar riktning och hämtar den första bokstaven av enumvärdet direction och konverterar till liten bokstav
-            String direction = String.valueOf(door.getDirection().name().charAt(0)).toLowerCase();
+            String direction = String.valueOf(door.getDirection().name().charAt(0)).toLowerCase(); // jag vet, lite hemsk kodrad men den gör jobbet.
             // Kontrollerar om det användaren har skrivit ner är ett giltigt enumvärde
             if (userInput.equals(direction)) {
                 currentRoom = rooms.indexOf(door.getNextRoom());
