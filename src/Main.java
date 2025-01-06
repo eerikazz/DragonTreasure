@@ -78,6 +78,7 @@ public class Main {
         Room room = rooms.get(roomIndex);
         System.out.printf("Location: Room " + roomIndex + "%n");
         room.doNarrative();
+        room.getItems();
         // System.out.printf("%n- - -%nPress [M] then [Enter] to return to MENU (NO SAVING).%n%nInput: ");
         System.out.printf("%n%nInput: ");
         String userInput = input.nextLine().toLowerCase();
@@ -169,6 +170,9 @@ public class Main {
         // Dörrar för rum 8
         Door door10 = new Door(room6, Door.Direction.WEST, false);
         room8.setDoor(door10);
+
+        Item item1 = new Key("key1", "Opens a door");
+        room8.setItem(item1);
     }
 
     // Rensar terminalen.
