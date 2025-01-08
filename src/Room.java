@@ -4,15 +4,13 @@ public class Room {
 
     private String description;
     private ArrayList<Door> doors;
-<<<<<<< Updated upstream
-
-=======
     private ArrayList<Item> items;
->>>>>>> Stashed changes
+
     // Konstruktor
     public Room(String description) {
         this.description = description;
         this.doors = new ArrayList<>();
+        this.items = new ArrayList<>();
     }
 
     // Metod som skriver ut beskrivning och dörrar

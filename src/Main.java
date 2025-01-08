@@ -171,7 +171,7 @@ public class Main {
         Door door10 = new Door(room6, Door.Direction.WEST, false);
         room8.setDoor(door10);
 
-        Item item1 = new Key("key1", "Opens a door");
+        Item item1 = new Key("key1", "Opens a door", door10);
         room8.setItem(item1);
     }
 
