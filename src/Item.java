@@ -11,17 +11,37 @@ public abstract class Item {
 }
 
 class Key extends Item {
-    int unlockdoor;
+    Door unlockdoor;
+
+    public Key(String name, String description, Door unlockdoor){
+        super(name, description);
+        this.unlockdoor = unlockdoor;
+    }
 }
 
 class Potion extends Item {
     int healing;
+
+    public Potion(String name, String description, int healing){
+        super(name, description);
+        this.healing = healing;
+    }
 }
 
 class Treasure extends Item {
     int goldValue;
+
+    public Treasure(String name, String description, int goldValue){
+        super(name, description);
+        this.goldValue = goldValue;
+    }
 }
 
-class weapon extends Item {
+class Weapon extends Item {
     int increaseDamage;
+
+    public Weapon(String name, String description, int increaseDamage){
+        super(name, description);
+        this.increaseDamage = increaseDamage;
+    }
 }
