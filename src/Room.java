@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 
 public class Room {
@@ -37,10 +38,12 @@ public class Room {
     public ArrayList<Door> getDoors() {
         return doors;
     }
+
     // Settermetod som lägger till en item i itemslistan
     public void setItem(Item newItem) {
         items.add(newItem);
     }
+
     // Gettermetod som returnerar hela listan med items
     public ArrayList<Item> getItems() {
         return items;
