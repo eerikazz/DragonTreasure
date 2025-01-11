@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 
 public class Room {
@@ -6,12 +5,14 @@ public class Room {
     private String description;
     private ArrayList<Door> doors;
     private ArrayList<Item> items;
+    private ArrayList<Monster> monsters;
 
     // Konstruktor
     public Room(String description) {
         this.description = description;
         this.doors = new ArrayList<>();
         this.items = new ArrayList<>();
+        this.monsters = new ArrayList<>();
     }
 
     // Metod som skriver ut beskrivning och dörrar
@@ -47,5 +48,13 @@ public class Room {
     // Gettermetod som returnerar hela listan med items
     public ArrayList<Item> getItems() {
         return items;
+    }
+
+    public void setMonster(Monster monster) {
+        monsters.add(monster);
+    }
+
+    public ArrayList<Monster> getMonsters() {
+        return monsters;
     }
 }

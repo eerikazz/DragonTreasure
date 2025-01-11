@@ -31,7 +31,7 @@ public class Main {
 
                 case Game:
                     // Om gamestate är game körs metod för att skriva ut rum
-                    if (currentRoom == 9) {
+                    if (currentRoom == rooms.toArray().length) {
                         gameState = GameState.End; // Om spelaren är i rum 9 avslutas spelet
                     } else {
                         renderRoom(currentRoom);   // Annars skrivs rum ut
@@ -68,7 +68,7 @@ public class Main {
     private static void createPlayer() {
         System.out.println("Enter username:");
         String userInput = input.nextLine();
-        new Player(userInput);
+        new Player(userInput, 10, 1);
         gameState = GameState.Menu;
     }
 
@@ -76,18 +76,23 @@ public class Main {
     private static void renderRoom(int roomIndex) {
         clearScreen();
         Room room = rooms.get(roomIndex);
-        System.out.printf("Location: Room " + roomIndex + "%n");
+
+        // System.out.printf("Location: Room " + roomIndex + "%n");
+
+        ArrayList<Item> itemsInRoom = room.getItems();
+        ArrayList<Monster> monstersInRoom = room.getMonsters();
+
         room.doNarrative();
-        room.getItems();
-        // System.out.printf("%n- - -%nPress [M] then [Enter] to return to MENU (NO SAVING).%n%nInput: ");
+
         System.out.printf("%n%nInput: ");
         String userInput = input.nextLine().toLowerCase();
+
         // Loopar igenom alla dörrar ett rum har
         for (Door door : room.getDoors()) {
             // Hämtar riktning och hämtar den första bokstaven av enumvärdet direction och konverterar till liten bokstav
             String direction = String.valueOf(door.getDirection().name().charAt(0)).toLowerCase(); // jag vet, lite hemsk kodrad men den gör jobbet.
             // Kontrollerar om det användaren har skrivit ner är ett giltigt enumvärde
-            if (userInput.equals(direction)) {
+            if (userInput.equals(direction) && !door.getIsLocked()) {
                 currentRoom = rooms.indexOf(door.getNextRoom());
             } else if (!userInput.equals("m")) { // Om användaren inte skriver in 'm' är det ogiltigt
                 System.out.println("Invalid input.");
@@ -103,76 +108,67 @@ public class Main {
     }
 
     private static void setupGame() {
-        // Skapa rum
-        Room room0 = new Room("Entrance.");
-        Room room1 = new Room("Room description.");
-        Room room2 = new Room("Room description.");
-        Room room3 = new Room("Room description.");
-        Room room4 = new Room("Room description.");
-        Room room5 = new Room("Room description.");
-        Room room6 = new Room("Drake");
-        Room room7 = new Room("Room description.");
-        Room room8 = new Room("Room description.");
-        Room room9 = new Room("Game end");
-        rooms.add(room0);
+        Room entrance   = new Room("Entrance");
+        Room room1      = new Room("Room 1");
+        Room sword      = new Room("Sword");
+        Room potion     = new Room("Potion");
+        Room key        = new Room("key");
+        Room goblin     = new Room("goblin");
+        Room dragon     = new Room("drake");
+        Room exit       = new Room("exit");
+
+        Door entrance_Room1 = new Door(room1, Door.Direction.NORTH, false);
+        Door room1_sword    = new Door(sword, Door.Direction.WEST, false);
+        Door sword_room1    = new Door(room1, Door.Direction.EAST, false);
+        Door room1_potion   = new Door(potion, Door.Direction.EAST, false);
+        Door potion_room1   = new Door(room1, Door.Direction.WEST, false);
+        Door room1_goblin   = new Door(goblin, Door.Direction.NORTH, false);
+        Door goblin_room1   = new Door(room1, Door.Direction.SOUTH, false);
+        Door goblin_key     = new Door(key, Door.Direction.NORTH, false);
+        Door key_goblin     = new Door(goblin, Door.Direction.SOUTH, false);
+        Door key_to_dragon  = new Door(dragon, Door.Direction.NORTH, true);
+        Door dragon_to_key  = new Door(key, Door.Direction.SOUTH, false);
+        Door dragon_to_exit = new Door(exit, Door.Direction.NORTH, false);
+
+        Item swordItem  = new Weapon("Sword", "Damage: 2 points", 1);
+        Item potionItem = new Weapon("Potion", "Heals", 0);
+        Item keyItem    = new Weapon("key", "Opens locked door", 0);
+
+        Monster goblinCreature = new Goblin("Goblin", 8, 1);
+        Monster dragonCreature = new Dragon("Dragon", 16, 1);
+
+        // Create map
+        rooms.add(entrance);
         rooms.add(room1);
-        rooms.add(room2);
-        rooms.add(room3);
-        rooms.add(room4);
-        rooms.add(room5);
-        rooms.add(room6);
-        rooms.add(room7);
-        rooms.add(room8);
-        rooms.add(room9);
+        rooms.add(sword);
+        rooms.add(potion);
+        rooms.add(key);
+        rooms.add(goblin);
+        rooms.add(dragon);
+        rooms.add(exit);
 
-        // Dörr för room 0 
-        // ändrat room 1 door till false så mak kan gå vidare
-        Door door0 = new Door(room1, Door.Direction.NORTH, false);
-        room0.setDoor(door0);
+        // Add doors
+        entrance.setDoor(entrance_Room1);
+        room1.setDoor(room1_sword);
+        room1.setDoor(room1_potion);
+        room1.setDoor(room1_goblin);
+        sword.setDoor(sword_room1);
+        potion.setDoor(potion_room1);
+        goblin.setDoor(goblin_room1);
+        goblin.setDoor(goblin_key);
+        key.setDoor(key_goblin);
+        key.setDoor(key_to_dragon);
+        dragon.setDoor(dragon_to_key);
+        dragon.setDoor(dragon_to_exit);
 
-        // Dörrar för rum 1
-        Door door1 = new Door(room2, Door.Direction.NORTH, false);
-        Door door2 = new Door(room3, Door.Direction.WEST, false);
-        room1.setDoor(door1);
-        room1.setDoor(door2);
+        // Add items
+        sword.setItem(swordItem);
+        potion.setItem(potionItem);
+        key.setItem(keyItem);
 
-        // Dörrar för rum 2
-        Door door3 = new Door(room8, Door.Direction.NORTH, false);
-        Door door4 = new Door(room6, Door.Direction.WEST, false);
-        room2.setDoor(door3);
-        room2.setDoor(door4);
-
-        // Dörrar för rum 3
-        Door door5 = new Door(room4, Door.Direction.EAST, false);
-        Door door6 = new Door(room5, Door.Direction.WEST, false);
-        room3.setDoor(door5);
-        room3.setDoor(door6);
-
-        // Dörrar för rum 4
-        Door door7 = new Door(room6, Door.Direction.NORTH, false);
-        Door back5 = new Door(room3, Door.Direction.SOUTH, false);
-        room4.setDoor(door7);
-        room4.setDoor(back5);
-
-        // Dörrar för rum 5
-        Door back6 = new Door(room3, Door.Direction.SOUTH, false);
-        room5.setDoor(door7);
-        room5.setDoor(back6);
-
-        // Dörrar för rum 6
-        Door door8 = new Door(room9, Door.Direction.NORTH, false); // Drake
-        room6.setDoor(door8);
-
-        // Dörrar för rum 7
-        Door door9 = new Door(room6, Door.Direction.WEST, false);
-        room7.setDoor(door9);
-
-        // Dörrar för rum 8
-        Door door10 = new Door(room6, Door.Direction.WEST, false);
-        room8.setDoor(door10);
-
-        Item item1 = new Key("key1", "Opens a door", door10);
-        room8.setItem(item1);
+        // Add monsters
+        goblin.setMonster(goblinCreature);
+        dragon.setMonster(dragonCreature);
     }
 
     // Rensar terminalen.
