@@ -4,23 +4,27 @@ public class Room {
 
     private String description;
     private ArrayList<Door> doors;
-    private ArrayList<Item> items;
-    private ArrayList<Monster> monsters;
+    private Item item;
+    private Monster monster;
 
-    // Konstruktor
+    public enum BattleOutcome {
+        NO_MONSTER,        // There was no monster in the room
+        MONSTER_DEFEATED,  // Monster was killed
+        PLAYER_FLED,       // Player fled
+        PLAYER_DEAD        // Player died
+    }
+
     public Room(String description) {
         this.description = description;
         this.doors = new ArrayList<>();
-        this.items = new ArrayList<>();
-        this.monsters = new ArrayList<>();
+        this.item = null;
+        this.monster = null;
     }
 
-    // Metod som skriver ut beskrivning och dörrar
     public void doNarrative() {
-        System.out.printf("%n" + description + "%n");
+        System.out.printf("%n%s%n", description);
 
         for (Door door : doors) {
-            // Hämta första bokstaven från enum värdet.
             char key = door.getDirection().name().charAt(0);
             if (door.getIsLocked()) {
                 System.out.printf("%nThe %s door is locked", door.getDirection().name());
@@ -30,31 +34,86 @@ public class Room {
         }
     }
 
-    // Settermetod som lägger till en dörr i doorslistan
-    public void setDoor(Door newDoor) {
-        doors.add(newDoor);
+    public BattleOutcome doBattle(Player player, java.util.Scanner input) {
+        // 1) If this room has no monster, no battle needed
+        if (monster == null) {
+            return BattleOutcome.NO_MONSTER;
+        }
+
+        // 2) If a monster is present, begin combat
+        System.out.println("\nA wild " + monster.getName() + " appears!");
+        while (true) {
+            // If monster has died, the player is victorious
+            if (monster.getHealth() <= 0) {
+                monster = null; // remove from the room
+                return BattleOutcome.MONSTER_DEFEATED;
+            }
+            // If player died
+            if (player.getHealth() <= 0) {
+                return BattleOutcome.PLAYER_DEAD;
+            }
+
+            System.out.printf("%nPress [A] to Attack or [F] to Flee: ");
+            String combatChoice = input.nextLine().trim().toLowerCase();
+
+            switch (combatChoice) {
+                case "a":
+                    // -- PLAYER ATTACKS --
+                    System.out.println(player.getName() + " attacks " + monster.getName()
+                            + " for " + player.getAttackPower() + " damage!");
+                    monster.setHealth(monster.getHealth() - player.getAttackPower());
+
+                    // Check if monster died from this attack
+                    if (monster.getHealth() <= 0) {
+                        System.out.println("You defeated the " + monster.getName() + "!");
+                        monster = null;
+                        return BattleOutcome.MONSTER_DEFEATED;
+                    }
+
+                    // Monster attacks back
+                    System.out.println(monster.getName() + " attacks " + player.getName()
+                            + " for " + monster.getAttackPower() + " damage!");
+                    player.setHealth(player.getHealth() - monster.getAttackPower());
+
+                    // Check if player died
+                    if (player.getHealth() <= 0) {
+                        System.out.println("You have been defeated...");
+                        return BattleOutcome.PLAYER_DEAD;
+                    }
+                    break;
+
+                case "f":
+                    // Player flees
+                    System.out.println("You attempt to flee...");
+                    return BattleOutcome.PLAYER_FLED;
+
+                default:
+                    System.out.println("Invalid input. Try again.");
+            }
+        }
     }
 
-    // Gettermetod som returnerar hela listan med dörrar
+    public void setDoor(Door door) {
+        doors.add(door);
+    }
+
     public ArrayList<Door> getDoors() {
         return doors;
     }
 
-    // Settermetod som lägger till en item i itemslistan
-    public void setItem(Item newItem) {
-        items.add(newItem);
+    public Item getItem() {
+        return item;
     }
 
-    // Gettermetod som returnerar hela listan med items
-    public ArrayList<Item> getItems() {
-        return items;
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Monster getMonster() {
+        return monster;
     }
 
     public void setMonster(Monster monster) {
-        monsters.add(monster);
-    }
-
-    public ArrayList<Monster> getMonsters() {
-        return monsters;
+        this.monster = monster;
     }
 }

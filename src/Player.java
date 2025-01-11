@@ -13,7 +13,6 @@ public class Player {
         this.inventory      = new ArrayList<>();
     }
 
-    // Returnerar en String med värdet name
     public String getName() {
         return name;
     }
@@ -39,6 +38,10 @@ public class Player {
     }
 
     public void removeItem(Item item) {
-        this.inventory.add(item);
+        this.inventory.remove(item);
+    }
+
+    public ArrayList<Item> getInventory() {
+        return this.inventory;
     }
 }

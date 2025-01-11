@@ -3,59 +3,58 @@ import java.util.Scanner;
 
 public class Main {
 
-    // Skapa enum för att kontrollera gamestate
     enum GameState {
         Menu,
         Game,
         End,
         Exit
     }
-    
+
     private static Scanner input = new Scanner(System.in);
-    // Skapa arraylist som innehåller alla rum
     private static ArrayList<Room> rooms = new ArrayList<>();
-    // Variabel för att hålla koll på nuvarande gamestate
     private static GameState gameState = GameState.Menu;
-    // Variabel som håller koll på vilket är det nuvarande rummet
     private static int currentRoom = 0;
+    private static int previousRoomIndex;
+    private static Player player;
 
     public static void main(String[] args) {
-        setupGame();    // Skapar rum och dörrar
-        createPlayer(); // Skapa spelare
-        while (gameState != GameState.Exit) { // så länge gamestate inte är exit körs spelet
+        setupGame();
+        createPlayer();
+        while (gameState != GameState.Exit) {
             switch (gameState) {
                 case Menu:
-                    // Om gamestate är menu visas meny
                     handleMenu();
                     break;
 
                 case Game:
-                    // Om gamestate är game körs metod för att skriva ut rum
-                    if (currentRoom == rooms.toArray().length) {
-                        gameState = GameState.End; // Om spelaren är i rum 9 avslutas spelet
+                    if (currentRoom >= rooms.size()) {
+                        gameState = GameState.End;
                     } else {
-                        renderRoom(currentRoom);   // Annars skrivs rum ut
+                        renderRoom(currentRoom);
                     }
                     break;
 
-                case End: // Avslutar spelet
+                case End:
                     handleEnd();
                     gameState = GameState.Exit;
                     break;
 
-                default: // Om gamestate är okänt, avslutas spelet
+                default:
                     System.out.println("ERROR: Unknown state!");
                     gameState = GameState.Exit;
             }
         }
     }
 
-    // Hanterar menyn
     private static void handleMenu() {
         clearScreen();
-        System.out.printf("Location: Menu%n%nPress [S] then [Enter] to START.%nPress [E] then [Enter] to EXIT.%n%nInput: ");
+        System.out.printf(
+                "Location: Menu%n%nPress [S] then [Enter] to START.%nPress [E] then [Enter] to EXIT.%n%nInput: "
+        );
         String userInput = input.nextLine().toLowerCase();
+
         if (userInput.equals("s")) {
+            currentRoom = 0;
             gameState = GameState.Game;
         } else if (userInput.equals("e")) {
             gameState = GameState.Exit;
@@ -64,45 +63,108 @@ public class Main {
         }
     }
 
-    // Metod som skapar spelaren
     private static void createPlayer() {
         System.out.println("Enter username:");
         String userInput = input.nextLine();
-        new Player(userInput, 10, 1);
+        player = new Player(userInput, 8, 1);
         gameState = GameState.Menu;
     }
 
-    // Metod som skriver ut rum och hanterar navigering
     private static void renderRoom(int roomIndex) {
         clearScreen();
         Room room = rooms.get(roomIndex);
 
-        // System.out.printf("Location: Room " + roomIndex + "%n");
-
-        ArrayList<Item> itemsInRoom = room.getItems();
-        ArrayList<Monster> monstersInRoom = room.getMonsters();
-
+        // 1) Show the room description
         room.doNarrative();
 
-        System.out.printf("%n%nInput: ");
-        String userInput = input.nextLine().toLowerCase();
+        // 2) If there's an item, pick it up automatically
+        if (room.getItem() != null) {
+            Item foundItem = room.getItem();
+            System.out.println("\nYou found an item: " + foundItem.name);
+            player.addItem(foundItem);
+            room.setItem(null);  // Remove the item from the room
+        }
 
-        // Loopar igenom alla dörrar ett rum har
-        for (Door door : room.getDoors()) {
-            // Hämtar riktning och hämtar den första bokstaven av enumvärdet direction och konverterar till liten bokstav
-            String direction = String.valueOf(door.getDirection().name().charAt(0)).toLowerCase(); // jag vet, lite hemsk kodrad men den gör jobbet.
-            // Kontrollerar om det användaren har skrivit ner är ett giltigt enumvärde
-            if (userInput.equals(direction) && !door.getIsLocked()) {
-                currentRoom = rooms.indexOf(door.getNextRoom());
-            } else if (!userInput.equals("m")) { // Om användaren inte skriver in 'm' är det ogiltigt
-                System.out.println("Invalid input.");
-            } else {
-                gameState = GameState.Menu; // om använder skriver 'm' går spelaren tillbaka till meny
+        // 3) Battle (returns an enum outcome)
+        Room.BattleOutcome outcome = room.doBattle(player, input);
+
+        switch (outcome) {
+            case NO_MONSTER:
+                // There's no monster here, do nothing special
+                break;
+
+            case MONSTER_DEFEATED:
+                // Monster is gone => continue on
+                break;
+
+            case PLAYER_FLED:
+                currentRoom = previousRoomIndex;
+                return;
+
+            case PLAYER_DEAD:
+                // Player died => end the game
+                gameState = GameState.End;
+                return;
+        }
+
+        // Quick check on the player to see if they died mid-battle
+        if (player.getHealth() <= 0) {
+            gameState = GameState.End;
+            return;
+        }
+
+        // 4) Move through doors or go back to menu
+        while (true) {
+            System.out.printf("%nInput: ");
+            String userInput = input.nextLine().toLowerCase();
+
+            if (userInput.equals("m")) {
+                gameState = GameState.Menu;
+                return;
+            }
+
+            ArrayList<Door> doors = room.getDoors();
+            boolean validInput = false;
+
+            for (Door door : doors) {
+                String directionChar = String.valueOf(door.getDirection().name().charAt(0)).toLowerCase();
+                if (userInput.equals(directionChar)) {
+                    validInput = true;
+
+                    if (door.getIsLocked()) {
+                        if (tryToUnlockDoor(door)) {
+                            System.out.println("The door unlocks!");
+                            previousRoomIndex = currentRoom;
+                            currentRoom = rooms.indexOf(door.getNextRoom());
+                            return;
+                        } else {
+                            System.out.println("The door is locked and you have no key!");
+                        }
+                    } else {
+                        previousRoomIndex = currentRoom;
+                        currentRoom = rooms.indexOf(door.getNextRoom());
+                        return;
+                    }
+                }
+            }
+
+            if (!validInput) {
+                System.out.println("Invalid input. Try again.");
             }
         }
     }
-    
-    // Metod för att avsluta spel. Tanken är att senare lägga till statistik när spelet tar slut
+
+    private static boolean tryToUnlockDoor(Door door) {
+        for (Item item : player.getInventory()) {
+            if (item.name.equalsIgnoreCase("key")) {
+                door.setUnlocked();
+                player.removeItem(item);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void handleEnd() {
         System.out.println("You made it out of the cave. Congratulations!");
     }
