@@ -7,6 +7,7 @@ public class Main {
         Menu,
         Game,
         End,
+        Death,
         Exit
     }
 
@@ -37,6 +38,10 @@ public class Main {
                 case End:
                     handleEnd();
                     gameState = GameState.Exit;
+                    break;
+
+                case Death:
+                    handleDeath();
                     break;
 
                 default:
@@ -73,28 +78,35 @@ public class Main {
     private static void renderRoom(int roomIndex) {
         clearScreen();
         Room room = rooms.get(roomIndex);
-
-        // 1) Show the room description
         room.doNarrative();
 
-        // 2) If there's an item, pick it up automatically
+        // 2) If item, take it
         if (room.getItem() != null) {
             Item foundItem = room.getItem();
             System.out.println("\nYou found an item: " + foundItem.name);
+
+            if (foundItem.name.equalsIgnoreCase("sword")) {
+                System.out.print("Damage set to 2");
+                player.setAttackPower(2);
+            }
+            else if (foundItem.name.equalsIgnoreCase("potion")) {
+                System.out.print("Health set to 8");
+                player.setHealth(8);
+            }
+
             player.addItem(foundItem);
             room.setItem(null);  // Remove the item from the room
         }
 
-        // 3) Battle (returns an enum outcome)
+        // 3) Battle
         Room.BattleOutcome outcome = room.doBattle(player, input);
 
         switch (outcome) {
             case NO_MONSTER:
-                // There's no monster here, do nothing special
                 break;
 
             case MONSTER_DEFEATED:
-                // Monster is gone => continue on
+                room.doNarrative();
                 break;
 
             case PLAYER_FLED:
@@ -102,18 +114,17 @@ public class Main {
                 return;
 
             case PLAYER_DEAD:
-                // Player died => end the game
+                // Player died
                 gameState = GameState.End;
                 return;
         }
 
         // Quick check on the player to see if they died mid-battle
         if (player.getHealth() <= 0) {
-            gameState = GameState.End;
+            gameState = GameState.Death;
             return;
         }
 
-        // 4) Move through doors or go back to menu
         while (true) {
             System.out.printf("%nInput: ");
             String userInput = input.nextLine().toLowerCase();
@@ -167,6 +178,11 @@ public class Main {
 
     private static void handleEnd() {
         System.out.println("You made it out of the cave. Congratulations!");
+    }
+
+    private static void handleDeath() {
+        System.out.println("You died :D");
+        gameState = GameState.Menu;
     }
 
     private static void setupGame() {

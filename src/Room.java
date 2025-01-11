@@ -24,12 +24,15 @@ public class Room {
     public void doNarrative() {
         System.out.printf("%n%s%n", description);
 
-        for (Door door : doors) {
-            char key = door.getDirection().name().charAt(0);
-            if (door.getIsLocked()) {
-                System.out.printf("%nThe %s door is locked", door.getDirection().name());
-            } else {
-                System.out.printf("%nPress [%c] then [Enter] to use the %s DOOR", key, door.getDirection().name());
+        // Only display doors if there's no monster left
+        if (monster == null) {
+            for (Door door : doors) {
+                char key = door.getDirection().name().charAt(0);
+                if (door.getIsLocked()) {
+                    System.out.printf("%nThe %s door is locked", door.getDirection().name());
+                } else {
+                    System.out.printf("%nPress [%c] then [Enter] to use the %s DOOR", key, door.getDirection().name());
+                }
             }
         }
     }
@@ -58,24 +61,24 @@ public class Room {
 
             switch (combatChoice) {
                 case "a":
-                    // -- PLAYER ATTACKS --
+                    // Player attacks
                     System.out.println(player.getName() + " attacks " + monster.getName()
                             + " for " + player.getAttackPower() + " damage!");
                     monster.setHealth(monster.getHealth() - player.getAttackPower());
 
-                    // Check if monster died from this attack
+                    // Did the monster die?
                     if (monster.getHealth() <= 0) {
                         System.out.println("You defeated the " + monster.getName() + "!");
                         monster = null;
                         return BattleOutcome.MONSTER_DEFEATED;
                     }
 
-                    // Monster attacks back
+                    // It didnt, it attacks
                     System.out.println(monster.getName() + " attacks " + player.getName()
                             + " for " + monster.getAttackPower() + " damage!");
                     player.setHealth(player.getHealth() - monster.getAttackPower());
 
-                    // Check if player died
+                    // Did the player die?
                     if (player.getHealth() <= 0) {
                         System.out.println("You have been defeated...");
                         return BattleOutcome.PLAYER_DEAD;
@@ -107,10 +110,6 @@ public class Room {
 
     public void setItem(Item item) {
         this.item = item;
-    }
-
-    public Monster getMonster() {
-        return monster;
     }
 
     public void setMonster(Monster monster) {
